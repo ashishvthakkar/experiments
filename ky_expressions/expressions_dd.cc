@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <iostream>
 
 namespace ky_expr {
 
@@ -80,9 +81,10 @@ std::string Expressions::AsString(Expressions::Expr &e) {
   class V : public ExpressionVisitor {
   public:
     void Visit(ConstantExpression &e) {
-      std::stringstream stream;
-      stream << "(" << e.GetValue() << ")";
-      result_ = stream.str();
+      result_ = "(" + std::to_string(e.GetValue()) + ")";
+      // std::stringstream stream;
+      // stream << "(" << e.GetValue() << ")";
+      // result_ = stream.str();
     }
 
     void Visit(BinaryOperatorExpression &e) {
@@ -90,9 +92,10 @@ std::string Expressions::AsString(Expressions::Expr &e) {
       auto l = std::move(result_);
       e.GetRHS().Accept(*this);
       auto r = std::move(result_);
-      std::stringstream stream;
-      stream << "(" << l << e.GetOp() << r << ")";
-      result_ = stream.str();
+      result_ = "(" + l + e.GetOp() + r + ")";
+      // std::stringstream stream;
+      // stream << "(" << l << e.GetOp() << r << ")";
+      // result_ = stream.str();
     }
 
     void Visit(TernaryOperatorExpression &e) {
@@ -102,9 +105,10 @@ std::string Expressions::AsString(Expressions::Expr &e) {
       auto t = std::move(result_);
       e.GetOnFalse().Accept(*this);
       auto f = std::move(result_);
-      std::stringstream stream;
-      stream << "(" << c << "?" << t << ":" << f << ")";
-      result_ = stream.str();
+      result_ = "(" + c + "?" + t + ":" + f + ")";
+      // std::stringstream stream;
+      // stream << "(" << c << "?" << t << ":" << f << ")";
+      // result_ = stream.str();
     }
 
     void Visit(FunctionCallExpression &e) {

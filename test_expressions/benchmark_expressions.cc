@@ -13,8 +13,12 @@ static void Test4_1(benchmark::State& state) {
 template <typename D>
 static void Test4_2(benchmark::State& state) {
   typename D::Expr e = LoadFromString<D>("BOp - BOp * BOp - C 4 C 7 BOp - C 4 C 7 BOp * BOp - C 4 C 7 BOp - C 4 C 7 ");
-  for (auto _ : state)
-    D::AsString(e);
+  volatile int len;
+  for (auto _ : state) {
+    std::string result;
+    result = D::AsString(e);
+    len = result.size();
+  }
 }
 
 BENCHMARK(Test4_1<AtExpressionsDriver>);
