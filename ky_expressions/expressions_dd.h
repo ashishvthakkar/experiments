@@ -16,4 +16,6 @@ public:
 
 }  // namespace ky_expr
 
+#include "expressions_dd.cc"
+
 #endif  // KY_EXPRESSIONS_DD_H

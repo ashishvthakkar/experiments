@@ -127,4 +127,6 @@ private:
 
 }  // namespace ky_expr
 
+#include "expressions.cc"
+
 #endif  // KY_EXPRESSIONS_H

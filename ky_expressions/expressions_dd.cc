@@ -4,9 +4,11 @@
 #include <sstream>
 #include <iostream>
 
+#define __HINT__ inline
+
 namespace ky_expr {
 
-int Expressions::Compute(Expressions::Expr &e) {
+__HINT__ int Expressions::Compute(Expressions::Expr &e) {
   class V : public ExpressionVisitor {
   public:
     void Visit(ConstantExpression &e) { result_ = e.GetValue(); }
@@ -77,7 +79,7 @@ int Expressions::Compute(Expressions::Expr &e) {
   return v.result_;
 }
 
-std::string Expressions::AsString(Expressions::Expr &e) {
+__HINT__ std::string Expressions::AsString(Expressions::Expr &e) {
   class V : public ExpressionVisitor {
   public:
     void Visit(ConstantExpression &e) {
@@ -135,7 +137,7 @@ std::string Expressions::AsString(Expressions::Expr &e) {
   return v.result_;
 }
 
-void Expressions::Save(Expressions::Expr &e, std::ostream &s) {
+__HINT__ void Expressions::Save(Expressions::Expr &e, std::ostream &s) {
   class V : public ExpressionVisitor {
   public:
     V(std::ostream &s) : s_(s) {}
