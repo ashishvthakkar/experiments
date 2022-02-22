@@ -61,16 +61,20 @@ __HINT__ std::string BinaryOperatorExpression::AsString() {
   // std::stringstream stream;
   // stream << "(" << l_->AsString() << op_ << r_->AsString() << ")";
   // return stream.str();
-  return "(" + l_->AsString() + op_ + r_->AsString() + ")";
+  const auto l = l_->AsString();
+  const auto r = r_->AsString();
+  return "(" + l + op_ + r + ")";
 }
 
 __HINT__ std::unique_ptr<Expression> BinaryOperatorExpression::Load(std::istream &s) {
   char o;
   s >> o;
+  auto l =Expression::Load(s);
+  auto r =Expression::Load(s); 
   return std::make_unique<BinaryOperatorExpression>(
       o,
-      std::move(Expression::Load(s)),
-      std::move(Expression::Load(s)));
+      std::move(std::move(l)),
+      std::move(std::move(r)));
 }
 
 __HINT__ void BinaryOperatorExpression::Save(std::ostream &s) {
