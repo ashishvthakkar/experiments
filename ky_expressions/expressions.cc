@@ -202,25 +202,39 @@ __HINT__ void FunctionCallExpression::Save(std::ostream &s) {
 //--- Expression ---
 
 __HINT__ std::unique_ptr<Expression> Expression::Load(std::istream &s) {
-  using Loader = std::unique_ptr<Expression> (*)(std::istream &);
-  static std::map<std::string, Loader> loaders;
+  // using Loader = std::unique_ptr<Expression> (*)(std::istream &);
+  // static std::map<std::string, Loader> loaders;
 
-  static bool initialized = false;
-  if (!initialized) {
-    loaders["C"] = ConstantExpression::Load;
-    loaders["BOp"] = BinaryOperatorExpression::Load;
-    loaders["TOp"] = TernaryOperatorExpression::Load;
-    loaders["Fx"] = FunctionCallExpression::Load;
-  }
+  // static bool initialized = false;
+  // if (!initialized) {
+  //   initialized = true;
+  //   loaders["C"] = ConstantExpression::Load;
+  //   loaders["BOp"] = BinaryOperatorExpression::Load;
+  //   loaders["TOp"] = TernaryOperatorExpression::Load;
+  //   loaders["Fx"] = FunctionCallExpression::Load;
+  // }
+
+  // std::string key;
+  // s >> key;
+  // auto i = loaders.find(key);
+  // if (i == loaders.end()) {
+  //   std::cerr << "bad token: " << key << std::endl;
+  //   abort();
+  // }
+  // return i->second(s);
 
   std::string key;
   s >> key;
-  auto i = loaders.find(key);
-  if (i == loaders.end()) {
-    std::cerr << "bad token: " << key << std::endl;
-    abort();
+
+  switch (key[0]) {
+    case 'C': return ConstantExpression::Load(s);
+    case 'B': return BinaryOperatorExpression::Load(s);
+    case 'T': return TernaryOperatorExpression::Load(s);
+    case 'F': return FunctionCallExpression::Load(s);
+    default:
+      std::cerr << "bad token: " << key << std::endl;
+      abort();
   }
-  return i->second(s);
 }
 
 }  // namespace ky_expr
