@@ -9,7 +9,7 @@ void RunWithMonitor() {
   std::atomic<int> tasks_completed = 0;
   std::vector<std::future<void>> futures;
   futures.reserve(num_tasks);
-  for (int i = 0; i < num_tasks; i++) {
+  for (auto i = 0; i < num_tasks; i++) {
     futures.push_back(
         std::async(std::launch::async, [num_tasks, &tasks_completed, i]() {
           const auto processing_time = i + 1;
