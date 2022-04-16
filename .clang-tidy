@@ -9,7 +9,9 @@ Checks: >
   -misc-no-recursion,
   -readability-magic-numbers,
   -google-runtime-references,
-  -llvm-header-guard  
+  -llvm-header-guard,
+  -hicpp-braces-around-statements,
+  -readability-braces-around-statements
   
 
 CheckOptions:
@@ -35,3 +37,11 @@ WarningsAsErrors: "*"
 #     references, while non-optional output and input/output parameters should 
 #     usually be references (which cannot be null)... Use non-const pointers 
 #     to represent optional outputs and optional input/output parameters. 
+# Disabled hicpp-braces-around-statements and 
+#   readability-braces-around-statements to allow for short same line if 
+#   statements. As stated in the style guide (as of 04/16/2022): 
+#     if an if statement has no else or else if clauses, then the curly braces 
+#     for the controlled statement or the line breaks inside the curly braces 
+#     may be omitted if as a result the entire if statement appears on either 
+#     a single line (in which case there is a space between the closing 
+#     parenthesis and the controlled statement)...
