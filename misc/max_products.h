@@ -16,11 +16,8 @@ public:
   void ComputeForSum(int target_sum);
 
 private:
-  void EvaluateCombination(
-      const Combination &combination,
-      std::set<Combination> *next);
+  void EvaluateCombination(const Combination &combination);
 
-  std::set<Combination> cache_;
   Combination combination_;
   int64_t product_;
 };
