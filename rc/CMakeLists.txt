@@ -8,7 +8,7 @@ target_link_libraries(simple_spsc
     PRIVATE glog::glog
 )
 
-add_executable(simple_spsc_tests simple_spsc spsc_q_tests.cc)
+add_executable(simple_spsc_tests spsc_q.cc spsc_q_tests.cc)
 target_link_libraries(simple_spsc_tests
     PRIVATE glog::glog
     PRIVATE GTest::gtest

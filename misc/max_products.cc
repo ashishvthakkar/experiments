@@ -5,6 +5,7 @@
 #include <iostream>
 
 namespace code_experiments {
+
 static void PrintCombination(const Combination &combination, int64_t product) {
   bool is_first = true;
   for (const auto &element : combination) {
@@ -15,6 +16,7 @@ static void PrintCombination(const Combination &combination, int64_t product) {
   std::cout << " = " << product;
   std::cout << std::endl;
 }
+
 static void UpdateFactor(Combination &combination, int factor, int by) {
   auto match = combination.find(factor);
   if (match != combination.end()) {
@@ -26,6 +28,7 @@ static void UpdateFactor(Combination &combination, int factor, int by) {
     combination.insert(std::pair<int, int>(factor, by));
   }
 }
+
 static void ReplaceFactor(Combination &combination, int remove, int add) {
   UpdateFactor(combination, add, 1);
   UpdateFactor(combination, remove, -1);
@@ -44,27 +47,27 @@ void CombinationFinder::ComputeForSum(int target_sum) {
       candidate = combination;
       for (const auto &[base, power] : combination) {
         ReplaceFactor(candidate, base, base + 1);
-        EvaluateCombination(candidate, next);
+        next->insert(candidate);
         ReplaceFactor(candidate, base + 1, base);
       }
       // Add combination for trailing 1
       UpdateFactor(candidate, 1, 1);
-      EvaluateCombination(candidate, next);
+      next->insert(candidate);
     }
-    LOG(INFO) << "Max for sum: " << sum;
-    PrintCombination(combination_, product_);
+    LOG(INFO) << "Evaluated " << next->size() << " combinations for sum "
+              << sum;
     std::set<Combination> *tmp = current;
     current = next;
     next = tmp;
   }
+  for (const auto &combination : *current) {
+    EvaluateCombination(combination);
+  }
+  LOG(INFO) << "Combination with max product: ";
+  PrintCombination(combination_, product_);
 }
 
-void CombinationFinder::EvaluateCombination(
-    const Combination &combination,
-    std::set<Combination> *next) {
-  if (cache_.find(combination) != cache_.end()) {
-    return;
-  }
+void CombinationFinder::EvaluateCombination(const Combination &combination) {
   int64_t product = 1;
   for (const auto &[base, power] : combination) {
     product *= std::pow(base, power);
@@ -73,8 +76,6 @@ void CombinationFinder::EvaluateCombination(
     product_ = product;
     combination_ = combination;
   }
-  next->insert(combination);
-  cache_.insert(combination);
 }
 
 }  // namespace code_experiments
@@ -89,8 +90,8 @@ int main() {
   finder.ComputeForSum(sum);
   auto end = chrono::high_resolution_clock::now();
   LOG(INFO) << "Computing max product for " << sum << " took "
-            << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
-            << " nanoseconds.";
+            << chrono::duration_cast<chrono::seconds>(end - start).count()
+            << " seconds.";
 
   return 0;
 }
