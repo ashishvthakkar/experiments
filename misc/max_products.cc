@@ -187,6 +187,24 @@ int64_t CombinationFinderShort::ForSum(int sum, Combination &combination) {
   return product;
 }
 
+int64_t FastFinder::ForSum(int sum) {
+  for (auto s = 2; s <= sum; s++) {
+    auto smallest = combination_.begin()->first;
+    auto replacement = smallest + 1;
+    ReplaceFactor(combination_, smallest, replacement);
+    for (auto factor = 2; factor <= replacement / 2; factor++) {
+      if (replacement % factor == 0) {
+        ReplaceFactor(combination_, replacement, factor);
+        UpdateFactor(combination_, replacement / factor, 1);
+        break;
+      }
+    }
+  }
+  auto product = Product(combination_);
+  PrintCombination(combination_, product);
+  return product;
+}
+
 }  // namespace code_experiments
 
 int main() {
@@ -210,11 +228,10 @@ int main() {
     code_experiments::CombinationFinder ky_finder;
     ky_finder.KyComputeForSum(sum);
     end = chrono::high_resolution_clock::now();
-    // LOG(INFO)
-    //     << "Computing ky max product for " << sum << " took "
-    //     << chrono::duration_cast<chrono::microseconds>(end - start).count()
-    //     << " microseconds, giving time / n^3 = "
-    //     << ((end - start).count() / (sum * sum * sum));
+    LOG(INFO) << "Computing ky max product for " << sum << " took "
+              << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
+              << " nanoseconds, giving time / n^3 = "
+              << ((end - start).count() / (sum * sum * sum));
   }
 
   LOG(INFO) << "Trying specialized combination finder";
@@ -223,11 +240,22 @@ int main() {
     code_experiments::CombinationFinderShort specialized;
     specialized.ForSum(sum);
     end = chrono::high_resolution_clock::now();
-    // LOG(INFO)
-    //     << "Computing specialized max product for " << sum << " took "
-    //     << chrono::duration_cast<chrono::microseconds>(end - start).count()
-    //     << " microseconds, giving time / n^3 = "
-    //     << ((end - start).count() / (sum * sum * sum));
+    LOG(INFO) << "Computing specialized max product for " << sum << " took "
+              << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
+              << " nanoseconds, giving time / n^3 = "
+              << ((end - start).count() / (sum * sum * sum));
+  }
+
+  LOG(INFO) << "Trying fast finder";
+  for (auto sum = sum_start; sum <= sum_end; sum++) {
+    start = chrono::high_resolution_clock::now();
+    code_experiments::FastFinder ff;
+    ff.ForSum(sum);
+    end = chrono::high_resolution_clock::now();
+    LOG(INFO) << "Computing fast max product for " << sum << " took "
+              << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
+              << " nanoseconds, giving time / n^3 = "
+              << ((end - start).count() / (sum * sum * sum));
   }
 
   return 0;
