@@ -41,6 +41,16 @@ private:
   std::vector<Combination> combinations_;
 };
 
+class FastFinder {
+public:
+  explicit FastFinder() : combination_{{1, 1}} {}
+
+  int64_t ForSum(int sum);
+
+private:
+  Combination combination_;
+};
+
 }  // namespace code_experiments
 
 #endif
