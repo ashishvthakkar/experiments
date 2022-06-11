@@ -1,8 +1,10 @@
 #include "max_products.h"
 
 #include <chrono>
-#include <cmath>
+// #include <cmath> // NOTE: std::pow doesn't always seem consistent with direct
+// multiplication
 #include <iostream>
+#include <set>
 
 namespace code_experiments {
 
@@ -44,13 +46,13 @@ static int64_t Product(const Combination &combination) {
   return product;
 }
 
-void CombinationFinder::ComputeForSum(int target_sum) {
-  CHECK(target_sum >= 1) << "Only positive sums allowed.";
+int64_t BasicFinder::ComputeForSum(int target_sum) {
+  CHECK(target_sum >= 2) << "Only sums > 1 allowed.";
   std::set<Combination> a = {{{1, 1}}, {{2, 1}}};
   std::set<Combination> b = {{{}}};
   std::set<Combination> *current = &a;
   std::set<Combination> *next = &b;
-  // Note: Below collases 1^n to 1^1
+  // Note: Below collates 1^n to 1^1
   for (auto sum = 3; sum <= target_sum; sum++) {
     LOG(INFO) << "Identifying combinations for sum " << sum;
     next->clear();
@@ -82,9 +84,10 @@ void CombinationFinder::ComputeForSum(int target_sum) {
   }
   LOG(INFO) << "Combination with max product: ";
   PrintCombination(combination_, product_);
+  return product_;
 }
 
-void CombinationFinder::EvaluateCombination(const Combination &combination) {
+void BasicFinder::EvaluateCombination(const Combination &combination) {
   int64_t product = Product(combination);
   PrintCombination(combination, product);
   if (product > product_) {
@@ -93,17 +96,17 @@ void CombinationFinder::EvaluateCombination(const Combination &combination) {
   }
 }
 
-void CombinationFinder::PrintKyCombination() {
+void KyFinder::PrintCombination() {
   for (const auto value : ky_combination_) {
     std::cout << value << " ";
   }
   std::cout << std::endl;
 }
 
-void CombinationFinder::KyComputeForSum(int target_sum) {
+void KyFinder::ComputeForSum(int target_sum) {
   // LOG(INFO) << "Ky: Identifying combinations for sum " << target_sum;
   for (auto count = 1; count <= target_sum; count++) {
-    auto product = KyComputeForSum(count, target_sum);
+    auto product = ComputeForSum(count, target_sum);
     if (!ky_combination_.empty()) {
       // PrintKyCombination();
       // LOG(INFO) << "Debug: Extra print for " << count;
@@ -117,7 +120,7 @@ void CombinationFinder::KyComputeForSum(int target_sum) {
   LOG(INFO) << "KyMax = " << product_;
 }
 
-int64_t CombinationFinder::KyComputeForSum(int count, int target_sum) {
+int64_t KyFinder::ComputeForSum(int count, int target_sum) {
   if (count == 1) {
     ky_combination_.push_back(target_sum);
     added_tail_ = true;
@@ -132,7 +135,7 @@ int64_t CombinationFinder::KyComputeForSum(int count, int target_sum) {
   for (auto num = 1; num < target_sum - count + 1; num++) {
     // std::cout << num << " ";
     ky_combination_.push_back(num);
-    int64_t product = KyComputeForSum(count - 1, target_sum - num) * num;
+    int64_t product = ComputeForSum(count - 1, target_sum - num) * num;
     // LOG(INFO) << product;
     // PrintKyCombination();
     if (product > max) {
@@ -151,43 +154,7 @@ int64_t CombinationFinder::KyComputeForSum(int count, int target_sum) {
   return max;
 }
 
-int64_t CombinationFinderShort::ForSum(int sum) {
-  int64_t max_product = 1;
-  for (auto s = 2; s <= sum; s++) {
-    Combination previous_best = combinations_[0];
-    int index = 0;
-    for (int i = 0; i < combinations_.size(); i++) {
-      auto &combination = combinations_[i];
-      auto smallest = combination.begin()->first;
-      ReplaceFactor(combination, smallest, smallest + 1);
-      auto product = Product(combination);
-      if ((product > max_product) ||
-          (product == max_product &&
-           combination.begin()->first < combinations_[index].begin()->first))
-      {
-        max_product = product;
-        index = i;
-      }
-    }
-    combinations_[0] = combinations_[index];
-    combinations_.resize(1);
-    if (combinations_[0].size() == 1) {
-      UpdateFactor(previous_best, 1, 1);
-      combinations_.push_back(previous_best);
-    }
-  }
-  PrintCombination(combinations_[0], Product(combinations_[0]));
-  return max_product;
-}
-
-int64_t CombinationFinderShort::ForSum(int sum, Combination &combination) {
-  int64_t product = ForSum(sum);
-  LOG_ASSERT(!combinations_.empty());
-  combination = combinations_[0];
-  return product;
-}
-
-int64_t FastFinder::ForSum(int sum) {
+int64_t FastFinder::ComputeForSum(int sum) {
   for (auto s = 2; s <= sum; s++) {
     auto smallest = combination_.begin()->first;
     auto replacement = smallest + 1;
@@ -206,57 +173,3 @@ int64_t FastFinder::ForSum(int sum) {
 }
 
 }  // namespace code_experiments
-
-int main() {
-  LOG(INFO) << "Compute max products for numbers that add to a given sum.";
-  const auto sum_start = 100;
-  const auto sum_end = 119;  // NOTE: There is overflow for int64_t after 119
-
-  namespace chrono = std::chrono;
-  LOG(INFO) << "Trying direct/full exhaustive";
-  auto start = chrono::high_resolution_clock::now();
-  code_experiments::CombinationFinder finder;
-  // finder.ComputeForSum(sum_end);
-  auto end = chrono::high_resolution_clock::now();
-  // LOG(INFO) << "Computing max product for " << sum_end << " took "
-  //           << chrono::duration_cast<chrono::seconds>(end - start).count()
-  //           << " seconds.";
-
-  LOG(INFO) << "Trying Ky exhaustive";
-  for (auto sum = sum_start; sum <= sum_end; sum++) {
-    start = chrono::high_resolution_clock::now();
-    code_experiments::CombinationFinder ky_finder;
-    ky_finder.KyComputeForSum(sum);
-    end = chrono::high_resolution_clock::now();
-    LOG(INFO) << "Computing ky max product for " << sum << " took "
-              << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
-              << " nanoseconds, giving time / n^3 = "
-              << ((end - start).count() / (sum * sum * sum));
-  }
-
-  LOG(INFO) << "Trying specialized combination finder";
-  for (auto sum = sum_start; sum <= sum_end; sum++) {
-    start = chrono::high_resolution_clock::now();
-    code_experiments::CombinationFinderShort specialized;
-    specialized.ForSum(sum);
-    end = chrono::high_resolution_clock::now();
-    LOG(INFO) << "Computing specialized max product for " << sum << " took "
-              << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
-              << " nanoseconds, giving time / n^3 = "
-              << ((end - start).count() / (sum * sum * sum));
-  }
-
-  LOG(INFO) << "Trying fast finder";
-  for (auto sum = sum_start; sum <= sum_end; sum++) {
-    start = chrono::high_resolution_clock::now();
-    code_experiments::FastFinder ff;
-    ff.ForSum(sum);
-    end = chrono::high_resolution_clock::now();
-    LOG(INFO) << "Computing fast max product for " << sum << " took "
-              << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
-              << " nanoseconds, giving time / n^3 = "
-              << ((end - start).count() / (sum * sum * sum));
-  }
-
-  return 0;
-}
