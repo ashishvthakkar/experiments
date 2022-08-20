@@ -11,7 +11,8 @@ Checks: >
   -google-runtime-references,
   -llvm-header-guard,
   -hicpp-braces-around-statements,
-  -readability-braces-around-statements
+  -readability-braces-around-statements,
+  -readability-identifier-length
   
 
 CheckOptions:
@@ -45,3 +46,4 @@ WarningsAsErrors: "*"
 #     may be omitted if as a result the entire if statement appears on either 
 #     a single line (in which case there is a space between the closing 
 #     parenthesis and the controlled statement)...
+# Disabled readability-identifier-length as short variable names are ok.

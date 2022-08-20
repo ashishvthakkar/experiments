@@ -6,6 +6,8 @@
 #include <atomic>
 #include <vector>
 
+#include "common.h"
+
 namespace code_experiments {
 
 // NOTE: This is a basic example of a potential single producer single consumer
@@ -14,7 +16,6 @@ namespace code_experiments {
 // Folly
 // (https://github.com/facebook/folly/blob/main/folly/ProducerConsumerQueue.h)
 // may be better.
-enum SpscQErrorCode { kOk = 0, kEmpty = -1, kFull = -2 };
 
 template <typename T>
 class SpscQ {
@@ -24,7 +25,7 @@ public:
     CHECK(size >= 2) << "SpscQ size too small";
   }
 
-  SpscQErrorCode Enqueue(T value) {
+  QErrorCode Enqueue(T value) {
     auto next_head = head_ + 1;
     if (next_head >= buffer_.size()) next_head = 0;
     if (next_head == tail_) return kFull;
@@ -35,7 +36,7 @@ public:
 
   // NOTE: In this sample, a copy is performed. It would be a simple extension
   // to do a move instead.
-  SpscQErrorCode Dequeue(T &return_value) {
+  QErrorCode Dequeue(T &return_value) {
     if (tail_ == head_) return kEmpty;
     return_value = buffer_[tail_];
     auto next_tail = tail_ + 1;
@@ -51,6 +52,7 @@ private:
 };
 
 template class SpscQ<double>;
+template class SpscQ<int>;
 
 }  // namespace code_experiments
 
