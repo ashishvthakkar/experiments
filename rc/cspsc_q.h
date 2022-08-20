@@ -4,6 +4,7 @@
 #include <glog/logging.h>
 
 #include <atomic>
+#include <chrono>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -13,9 +14,28 @@
 
 namespace code_experiments {
 
-// TODO(ashish): Confirm size is within machine work ensuring atomic read/write
-// or protect with std::atomic<Pair>
-struct CPair {
+// Check windows
+#if _WIN32 || _WIN64
+#if _WIN64
+const int kMachineWordSize = 8;
+#else
+const int kMachineWordSize = 4;
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+const int kMachineWordSize = 8;
+#else
+const int kMachineWordSize = 4;
+#endif
+#endif
+
+// Note: The beloe checks for min machine word size of 8, ensures alignment to
+// 8-byte boundary, and expects that reads and write of the 8-byte value are
+// done atomically. If required, these can be protected through std::atomic.
+struct alignas(alignof(int64_t)) CPair {
   int id;
   int val;
 };
@@ -33,7 +53,13 @@ public:
         head_(0),
         tail_(0),
         erase_q_(size) {
-    CHECK(size >= 2) << "Q size too small";
+    CHECK(size >= 2) << "Queue size too small";
+    // Note: The below checks can likely be converted to be at compile time.
+    CHECK(sizeof(void *) >= kMinMachineWordSize)
+        << "Min machined word size of 64-bit (or larger) expected";
+    CHECK(kMachineWordSize >= kMinMachineWordSize)
+        << "Min machined word size of 64-bit (or larger) expected";
+    CHECK(alignof(T) == kMinMachineWordSize) << "Unexpected alignment";
   }
 
   QErrorCode Enqueue(T pair) {
@@ -47,7 +73,10 @@ public:
       // condition exists where the reader gets two notifications with the
       // refereshed value - while sub-optimal that has been considered
       // acceptable.
-      // TODO(ashish): Confirm whether the below comparison works as expected.
+      // Note: Uncomment the below sleep statement to test the edge case where
+      // the reader reads just after the writer checks the cache. Additional
+      // comments in test "MultithreadedWriterReaderInducedSleepCheck".
+      // std::this_thread::sleep_for(std::chrono::seconds(1));
       auto erase_id = 0;
       while (erase_q_.Dequeue(erase_id) == kOk) {
         id_to_index_.erase(erase_id);
@@ -86,6 +115,8 @@ private:
   std::atomic<int> tail_;
   std::unordered_map<int, int> id_to_index_;
   SpscQ<int> erase_q_;
+
+  const int kMinMachineWordSize = 8;
 };
 
 template class ConsolidatingSpscQ<CPair>;
