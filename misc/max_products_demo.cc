@@ -1,9 +1,13 @@
 #include <chrono>
+#include <cstdint>
 
 #include "max_products.h"
 
 template <typename T>
-void Evaluate(T &t, int sum_start, int sum_end) {
+void Evaluate(
+    T &t,
+    int sum_start,  // NOLINT(bugprone-easily-swappable-parameters)
+    int sum_end) {  // NOLINT(bugprone-easily-swappable-parameters)
   namespace chrono = std::chrono;
   LOG(INFO) << "Evaluating " << typeid(t).name();
   for (auto sum = sum_start; sum <= sum_end; sum++) {
@@ -16,8 +20,9 @@ void Evaluate(T &t, int sum_start, int sum_end) {
         << "Computing max product for " << sum << " took "
         << chrono::duration_cast<chrono::microseconds>(end - start).count()
         << " microseconds. (time / n^3, time / n^2, time / n) = ("
-        << (diff / (sum * sum * sum)) << ", " << (diff / (sum * sum)) << ", "
-        << (diff / sum) << ")";
+        << (diff / static_cast<int64_t>(sum * sum * sum)) << ", "
+        << (diff / static_cast<int64_t>(sum * sum)) << ", " << (diff / sum)
+        << ")";
   }
 }
 

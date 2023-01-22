@@ -6,7 +6,7 @@
 
 void RunWithMonitor() {
   const auto num_tasks = 5;
-  std::atomic<int> tasks_completed = 0;
+  std::atomic<int> tasks_completed{0};
   std::vector<std::future<void>> futures;
   futures.reserve(num_tasks);
   for (auto i = 0; i < num_tasks; i++) {
