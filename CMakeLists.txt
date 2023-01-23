@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.19)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+# SET(CMAKE_CXX_FLAGS “-fmodules-ts”) # CMake doesn't seem to support this yet
 project(experiments VERSION 0.1.0)
 
 include(CTest)
@@ -36,6 +37,8 @@ add_subdirectory(type_size_optimizations)
 add_subdirectory(multi_reader_async)
 add_subdirectory(rc)
 add_subdirectory(misc)
+# add_subdirectory(expts20) # Can be built separately using 
+#   g++ -std=c++20 -fmodules-ts hello.cc demo20.cc
 
 add_executable(example main.cc)
 target_link_libraries(example
